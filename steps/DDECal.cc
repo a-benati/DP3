@@ -701,6 +701,7 @@ void DDECal::doSolve() {
 
 bool DDECal::process(std::unique_ptr<DPBuffer> bufin) {
   itsTimer.start();
+  std::cout << "fra1\n";
 
   // Check that all extra input data is there.
   // TODO(AST-1241): Handle these dependencies using Fields.
@@ -740,6 +741,7 @@ bool DDECal::process(std::unique_ptr<DPBuffer> bufin) {
   }
 
   itsTimer.stop();
+  std::cout << "fra2\n";
 
   return false;
 }
