@@ -338,16 +338,23 @@ void Execute(const string& parsetName, int argc, char* argv[]) {
     double ndone = 0;
     ProgressMeter progress(ndone, ntodo, "DP3", "Time slots processed", "", "",
                            true, 1);
+    std::cout << "ciao1\n";
     if (ntodo > 0) progress.update(ndone, true);
+    std::cout << "ciao2\n";
     while (firstStep->process(std::make_unique<DPBuffer>())) {
       ++ndone;
+      std::cout << "ciao3\n";
       if (ntodo > 0) progress.update(ndone, true);
+      std::cout << "ciao4\n";
     }
   } else {
+    std::cout << "ciao5\n";
     while (firstStep->process(std::make_unique<DPBuffer>())) {
+        std::cout << "ciao6\n";
       // do nothing
     }
   }
+  std::cout << "ciao7\n";
   // Finish the processing.
   aocommon::Logger::Info << "Finishing processing ...\n";
   firstStep->finish();
