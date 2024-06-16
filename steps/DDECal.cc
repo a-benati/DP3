@@ -470,6 +470,7 @@ void DDECal::showTimings(std::ostream& os, double duration) const {
 void DDECal::InitializeSolutions(size_t buffer_index) {
   const size_t solution_index = itsFirstSolutionIndex + buffer_index;
   std::cout << "InitializeSolutions: solution_index = " << solution_index << "\n";
+  std::cout << "itsSols.size() = " << itsSols.size() << "\n";
   assert(solution_index < itsSols.size());
 
   bool propagate_solutions = solution_index > 0 && itsSettings.propagate_solutions;
