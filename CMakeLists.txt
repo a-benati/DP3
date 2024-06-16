@@ -365,6 +365,8 @@ if("${isSystemDir}" STREQUAL "-1")
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
 endif("${isSystemDir}" STREQUAL "-1")
 
+add_definitions(-UNDEBUG)
+
 add_library(
   Blob OBJECT
   blob/BlobAipsIO.cc
