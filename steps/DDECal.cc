@@ -469,30 +469,38 @@ void DDECal::showTimings(std::ostream& os, double duration) const {
 
 void DDECal::InitializeSolutions(size_t buffer_index) {
   const size_t solution_index = itsFirstSolutionIndex + buffer_index;
+  std::cout << "InitializeSolutions: solution_index = " << solution_index << "\n";
   assert(solution_index < itsSols.size());
 
   bool propagate_solutions =
       solution_index > 0 && itsSettings.propagate_solutions;
+  std::cout << "propagate_solutions initial: " << propagate_solutions << "\n";
+  
   if (propagate_solutions &&
       itsNIter[solution_index - 1] > itsSolver->GetMaxIterations() &&
       itsSettings.propagate_converged_only) {
     propagate_solutions = false;
   }
+  std::cout << "propagate_solutions after checks: " << propagate_solutions << "\n";
 
   if (propagate_solutions) {
     // Initialize solutions with those of the previous step.
+    std::cout << "Propagating solutions from previous step\n";
     itsSols[solution_index] = itsSols[solution_index - 1];
   } else {
     const size_t n_solutions = std::accumulate(
         itsSolutionsPerDirection.begin(), itsSolutionsPerDirection.end(), 0u);
     const size_t n_solution_values = n_solutions * info().antennaUsed().size() *
                                      itsSolver->NSolutionPolarizations();
+    std::cout << "n_solutions: " << n_solutions << ", n_solution_values: " << n_solution_values << "\n";
 
     if (itsSolver->NSolutionPolarizations() == 4) {
       // Initialize solutions with unity matrix [1 0 ; 0 1].
+      std::cout << "Initializing solutions with unity matrix\n";
       for (std::vector<casacore::DComplex>& solution_vector :
            itsSols[solution_index]) {
         solution_vector.resize(n_solution_values);
+        std::cout << "Resized solution_vector to " << n_solution_values << "\n";
         for (size_t i = 0; i < n_solution_values; i += 4) {
           solution_vector[i + 0] = 1.0;
           solution_vector[i + 1] = 0.0;
@@ -502,13 +510,17 @@ void DDECal::InitializeSolutions(size_t buffer_index) {
       }
     } else {
       // Initialize solutions with 1.
+      std::cout << "Initializing solutions with 1\n";
       for (std::vector<casacore::DComplex>& solution_vector :
            itsSols[solution_index]) {
         solution_vector.assign(n_solution_values, 1.0);
+        std::cout << "Assigned solution_vector with " << n_solution_values << " elements of 1.0\n";
       }
     }
   }
+  std::cout << "Exiting InitializeSolutions for index " << buffer_index << "\n";
 }
+
 
 void DDECal::flagChannelBlock(size_t cbIndex, size_t bufferIndex) {
   const size_t nBl = info().nbaselines();
