@@ -576,113 +576,109 @@ void DDECal::doSolve() {
                                itsSettings.keep_model_data;
   std::cout << "petra3\n";
 
-  for (size_t i = 0; i < itsInputBuffers.size(); ++i) {
+for (size_t i = 0; i < itsInputBuffers.size(); ++i) {
     const size_t solution_index = itsFirstSolutionIndex + i;
+    std::cout << "Processing solution index: " << solution_index << "\n";
     assert(solution_index < itsSols.size());
 
     ddecal::SolverBase::SolveResult solveResult;
     if (!itsSettings.only_predict) {
-      if (itsSettings.min_vis_ratio > 0.0) {
-        checkMinimumVisibilities(i);
-      }
-
-      for (ddecal::SolverBase* solver : solvers) {
-        for (const std::unique_ptr<ddecal::Constraint>& constraint :
-             solver->GetConstraints()) {
-          constraint->SetWeights(itsWeightsPerAntenna);
+        std::cout << "Check min vis ratio: " << itsSettings.min_vis_ratio << "\n";
+        if (itsSettings.min_vis_ratio > 0.0) {
+            checkMinimumVisibilities(i);
         }
-      }
 
-      aocommon::Logger::Debug
-          << "Initializing DDECal solver for current calibration interval.\n";
+        std::cout << "Setting weights\n";
+        for (ddecal::SolverBase* solver : solvers) {
+            for (const std::unique_ptr<ddecal::Constraint>& constraint : solver->GetConstraints()) {
+                constraint->SetWeights(itsWeightsPerAntenna);
+            }
+        }
 
-      // The last solution interval can be smaller.
-      std::vector<base::DPBuffer> weighted_buffers(itsInputBuffers[i].size());
+        aocommon::Logger::Debug << "Initializing DDECal solver for current calibration interval.\n";
 
-      const bool linear_mode =
-          itsSettings.solver_algorithm == ddecal::SolverAlgorithm::kLowRank;
-      ddecal::AssignAndWeight(itsInputBuffers[i], itsDirectionNames,
-                              weighted_buffers, keep_model_data, linear_mode);
+        std::vector<base::DPBuffer> weighted_buffers(itsInputBuffers[i].size());
+        std::cout << "Assign and Weight\n";
+        const bool linear_mode = itsSettings.solver_algorithm == ddecal::SolverAlgorithm::kLowRank;
+        ddecal::AssignAndWeight(itsInputBuffers[i], itsDirectionNames, weighted_buffers, keep_model_data, linear_mode);
 
-      InitializeSolutions(i);
+        std::cout << "Initialize Solutions\n";
+        InitializeSolutions(i);
 
-      itsTimerSolve.start();
+        itsTimerSolve.start();
+        std::cout << "Solve Data Setup\n";
 
-      const ddecal::SolveData solve_data(
-          weighted_buffers, itsDirectionNames, n_channel_blocks, n_antennas,
-          itsSolutionsPerDirection, itsAntennas1, itsAntennas2);
-      weighted_buffers.clear();
+        const ddecal::SolveData solve_data(weighted_buffers, itsDirectionNames, n_channel_blocks, n_antennas,
+                                           itsSolutionsPerDirection, itsAntennas1, itsAntennas2);
+        weighted_buffers.clear();
 
-      aocommon::Logger::Debug
-          << "Running DDECal solver for current calibration interval.\n";
+        aocommon::Logger::Debug << "Running DDECal solver for current calibration interval.\n";
+        std::cout << "Before Solve\n";
+        solveResult = itsSolver->Solve(solve_data, itsSols[solution_index],
+                                       itsAvgTime / itsRequestedSolInt,
+                                       itsStatStream.get());
+        std::cout << "After Solve\n";
 
-      solveResult = itsSolver->Solve(solve_data, itsSols[solution_index],
-                                     itsAvgTime / itsRequestedSolInt,
-                                     itsStatStream.get());
+        itsTimerSolve.stop();
 
-      itsTimerSolve.stop();
-
-      itsNIter[solution_index] = solveResult.iterations;
-      itsNApproxIter[solution_index] = solveResult.constraint_iterations;
+        itsNIter[solution_index] = solveResult.iterations;
+        itsNApproxIter[solution_index] = solveResult.constraint_iterations;
     }
 
     if (itsSettings.only_predict) {
-      SumModels(i);
+        std::cout << "Sum Models\n";
+        SumModels(i);
     } else if (itsSettings.subtract || itsSettings.keep_model_data) {
-      CorrectAndSubtractModels(i);
+        std::cout << "Correct and Subtract Models\n";
+        CorrectAndSubtractModels(i);
     }
 
-    // Check for nonconvergence and flag if desired. Unconverged solutions are
-    // identified by the number of iterations being one more than the max
-    // allowed number
+    // Check for nonconvergence and flag if desired.
+    std::cout << "Check Nonconvergence\n";
     if (solveResult.iterations > itsSolver->GetMaxIterations() &&
         itsSettings.flag_unconverged) {
-      for (auto& constraint_results : solveResult.results) {
-        for (auto& result : constraint_results) {
-          if (itsSettings.flag_diverged_only) {
-            // Set weights with negative values (indicating unconverged
-            // solutions that diverged) to zero (all other unconverged
-            // solutions remain unflagged)
-            for (double& weight : result.weights) {
-              if (weight < 0.) weight = 0.;
+        for (auto& constraint_results : solveResult.results) {
+            for (auto& result : constraint_results) {
+                if (itsSettings.flag_diverged_only) {
+                    for (double& weight : result.weights) {
+                        if (weight < 0.) weight = 0.;
+                    }
+                } else {
+                    result.weights.assign(result.weights.size(), 0.);
+                }
             }
-          } else {
-            // Set all weights to zero
-            result.weights.assign(result.weights.size(), 0.);
-          }
         }
-      }
     } else {
-      // Set any negative weights (indicating unconverged solutions that
-      // diverged) to one (all other unconverged solutions are unflagged
-      // already)
-      for (auto& constraint_results : solveResult.results) {
-        for (auto& result : constraint_results) {
-          for (double& weight : result.weights) {
-            if (weight < 0.0) weight = 1.0;
-          }
+        for (auto& constraint_results : solveResult.results) {
+            for (auto& result : constraint_results) {
+                for (double& weight : result.weights) {
+                    if (weight < 0.0) weight = 1.0;
+                }
+            }
         }
-      }
     }
 
     // Store constraint solutions if any constraint has a non-empty result
+    std::cout << "Store Constraint Solutions\n";
     bool someConstraintHasResult = false;
     for (const auto& constraint_results : solveResult.results) {
-      if (!constraint_results.empty()) {
-        someConstraintHasResult = true;
-        break;
-      }
+        if (!constraint_results.empty()) {
+            someConstraintHasResult = true;
+            break;
+        }
     }
     if (someConstraintHasResult) {
-      itsConstraintSols[solution_index] = solveResult.results;
+        itsConstraintSols[solution_index] = solveResult.results;
     }
 
     // Store calibration solution for later calibration application steps.
     if (itsStoreSolutionInBuffer) {
-      itsInputBuffers[i].front()->SetSolution(itsSols[solution_index]);
+        std::cout << "Store Calibration Solution\n";
+        itsInputBuffers[i].front()->SetSolution(itsSols[solution_index]);
     }
-  }
-  std::cout << "petra4\n";
+}
+std::cout << "petra4\n";
+
 
   itsTimer.stop();
 
