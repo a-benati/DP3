@@ -717,15 +717,21 @@ bool DDECal::process(std::unique_ptr<DPBuffer> bufin) {
   // Create a new solution interval if needed
   if (itsInputBuffers.empty() ||
       itsInputBuffers.back().size() == itsRequestedSolInt) {
+    std::cout << "fra2\n";
     itsInputBuffers.emplace_back();
   }
 
+  std::cout << "fra3\n";
   itsInputBuffers.back().push_back(std::move(bufin));
+  std::cout << "fra4\n";
   doPrepare();
+  std::cout << "fra5\n";
 
   if (itsInputBuffers.size() == itsSolIntCount &&
       itsInputBuffers.back().size() == itsRequestedSolInt) {
+    std::cout << "fra6\n";
     doSolve();
+    std::cout << "fra7\n";
 
     // Clean up, prepare for next iteration
     itsFirstSolutionIndex += itsInputBuffers.size();
@@ -737,11 +743,13 @@ bool DDECal::process(std::unique_ptr<DPBuffer> bufin) {
     for (std::shared_ptr<MultiResultStep>& result_step : itsResultSteps) {
       if (result_step) result_step->clear();
     }
+    std::cout << "fra8\n";
     itsInputBuffers.clear();
+    std::cout << "fra9\n";  
   }
 
   itsTimer.stop();
-  std::cout << "fra2\n";
+  std::cout << "fra10\n";
 
   return false;
 }
