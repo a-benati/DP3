@@ -539,6 +539,7 @@ void DDECal::checkMinimumVisibilities(size_t bufferIndex) {
 }
 
 void DDECal::doSolve() {
+  std::cout << "petra1\n";
   for (size_t dir = 0; dir < itsDirections.size(); ++dir) {
     // For directions that reuse model data, the model data of the various
     // time steps should already be in the input buffers.
@@ -561,6 +562,7 @@ void DDECal::doSolve() {
           *itsResultSteps[dir]->get()[i], "", itsDirectionNames[dir]);
     }
   }
+  std::cout << "petra2\n";
 
   std::vector<ddecal::SolverBase*> solvers = itsSolver->ConstraintSolvers();
   const size_t n_channel_blocks = itsChanBlockFreqs.size();
@@ -572,6 +574,7 @@ void DDECal::doSolve() {
   const bool keep_model_data = itsSettings.only_predict ||
                                itsSettings.subtract ||
                                itsSettings.keep_model_data;
+  std::cout << "petra3\n";
 
   for (size_t i = 0; i < itsInputBuffers.size(); ++i) {
     const size_t solution_index = itsFirstSolutionIndex + i;
@@ -679,6 +682,7 @@ void DDECal::doSolve() {
       itsInputBuffers[i].front()->SetSolution(itsSols[solution_index]);
     }
   }
+  std::cout << "petra4\n";
 
   itsTimer.stop();
 
@@ -695,6 +699,7 @@ void DDECal::doSolve() {
       getNextStep()->process(std::move(itsInputBuffers[sol_int][timestep]));
     }
   }
+  std::cout << "petra5\n";
 
   itsTimer.start();
 }
