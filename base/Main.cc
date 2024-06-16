@@ -33,6 +33,9 @@ void showUsage() {
          "\"NDPPP.parset\" or \"DPPP.parset\" as a default.\n"
          "-v will show version info and exit.\n"
          "Documentation is at: https://dp3.readthedocs.io\n";
+  std::cout << "\n\n\nRight before the assert\n";
+  assert(false && "This assert should always fail");
+  std::cout << "Right after the assert\n";
 }
 
 int main(int argc, char* argv[]) {
