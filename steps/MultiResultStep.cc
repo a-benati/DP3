@@ -15,6 +15,10 @@ MultiResultStep::MultiResultStep(unsigned int size) : buffers_(size), size_(0) {
 }
 
 bool MultiResultStep::process(std::unique_ptr<base::DPBuffer> buffer) {
+  if (size_ > buffers_.size()) {
+      std::cerr << "Error: size_ exceeds buffers_.size()" << std::endl;
+      return false;  // Prevent the loop from continuing
+  }
   assert(size_ < buffers_.size());
 
   // If the next step is not a NullStep, one copy of the buffer is saved into
