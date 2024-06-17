@@ -749,6 +749,8 @@ bool DDECal::process(std::unique_ptr<DPBuffer> bufin) {
     std::cout << "fra7\n";
 
     // Clean up, prepare for next iteration
+    std::cout << "itsFirstSolutionIndex = " << itsFirstSolutionIndex << "\n";
+    std::cout << "itsInputBuffers.size() = " << itsInputBuffers.size() << "\n";
     itsFirstSolutionIndex += itsInputBuffers.size();
     itsAvgTime = 0;
     itsVisInInterval.assign(itsVisInInterval.size(),
