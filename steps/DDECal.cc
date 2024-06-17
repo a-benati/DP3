@@ -906,7 +906,7 @@ void DDECal::WriteSolutions() {
 void DDECal::finish() {
   itsTimer.start();
   std::cout << itsInputBuffers.size() << "\n";
-  if (solution_index < itsSols.size()) {
+  if (itsFirstSolutionIndex + buffer_index < itsSols.size()) {
       if (!itsInputBuffers.empty()) {
     doSolve();
       }
