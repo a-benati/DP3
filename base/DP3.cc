@@ -332,32 +332,39 @@ void Execute(const string& parsetName, int argc, char* argv[]) {
   SkyModelCache::GetInstance().Clear();
 
   // Process until the end.
-  unsigned int ntodo = firstStep->getInfo().ntime();
-  aocommon::Logger::Info << "Processing " << ntodo << " time slots ...\n";
-  if (showProgress) {
+unsigned int ntodo = firstStep->getInfo().ntime();
+aocommon::Logger::Info << "Processing " << ntodo << " time slots ...\n";
+if (showProgress) {
     double ndone = 0;
     ProgressMeter progress(ndone, ntodo, "DP3", "Time slots processed", "", "",
                            true, 1);
-    std::cout << "ciao1\n";
     if (ntodo > 0) progress.update(ndone, true);
-    std::cout << "ciao2\n";
-    while (firstStep->process(std::make_unique<DPBuffer>())) {
-      ++ndone;
-      std::cout << "ciao3\n";
-      if (ntodo > 0) progress.update(ndone, true);
-      std::cout << "ciao4\n";
+    while (true) {
+        bool continueProcessing = firstStep->process(std::make_unique<DPBuffer>());
+        std::cout << "process() returned: " << continueProcessing << std::endl;
+        if (!continueProcessing) {
+            std::cout << "Exiting loop due to false return from process()\n";
+            break;
+        }
+        ++ndone;
+        std::cout << "ciao3\n";
+        if (ntodo > 0) progress.update(ndone, true);
+        std::cout << "ciao4\n";
     }
-  } else {
-    std::cout << "ciao5\n";
-    while (firstStep->process(std::make_unique<DPBuffer>())) {
-        std::cout << "ciao6\n";
-      // do nothing
+} else {
+    while (true) {
+        bool continueProcessing = firstStep->process(std::make_unique<DPBuffer>());
+        std::cout << "process() returned: " << continueProcessing << std::endl;
+        if (!continueProcessing) {
+            std::cout << "Exiting loop due to false return from process()\n";
+            break;
+        }
+        std::cout << "ciao4\n";
     }
-  }
-  std::cout << "ciao7\n";
-  // Finish the processing.
-  aocommon::Logger::Info << "Finishing processing ...\n";
-  firstStep->finish();
+}
+aocommon::Logger::Info << "Finishing processing ...\n";
+firstStep->finish();
+
 
   // Show the counts where needed.
   if (showcounts) {
