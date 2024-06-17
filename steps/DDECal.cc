@@ -751,6 +751,13 @@ bool DDECal::process(std::unique_ptr<DPBuffer> bufin) {
     // Clean up, prepare for next iteration
     std::cout << "itsFirstSolutionIndex = " << itsFirstSolutionIndex << "\n";
     std::cout << "itsInputBuffers.size() = " << itsInputBuffers.size() << "\n";
+
+    // Check if the updated itsFirstSolutionIndex would exceed itsSols.size()
+    if (itsFirstSolutionIndex + itsInputBuffers.size() > itsSols.size()) {
+      std::cerr << "Error: itsFirstSolutionIndex + itsInputBuffers.size() exceeds itsSols.size()" << std::endl;
+      return false;  // Handle the error appropriately
+    }
+      
     itsFirstSolutionIndex += itsInputBuffers.size();
     itsAvgTime = 0;
     itsVisInInterval.assign(itsVisInInterval.size(),
