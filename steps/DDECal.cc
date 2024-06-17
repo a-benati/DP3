@@ -906,10 +906,10 @@ void DDECal::WriteSolutions() {
 void DDECal::finish() {
   itsTimer.start();
   std::cout << itsInputBuffers.size() << "\n";
-  #if (!itsInputBuffers.empty()) {
-  #  doSolve();
-  #}
-  #else std::cout << "I'm inside DDECal::finish and solution_index is not < itsSols.size(), therefore I do not call doSolve()\n";
+  //if (!itsInputBuffers.empty()) {
+  //  doSolve();
+  //}
+  //else std::cout << "I'm inside DDECal::finish and solution_index is not < itsSols.size(), therefore I do not call doSolve()\n";
 
   if (!itsSettings.only_predict) WriteSolutions();
 
