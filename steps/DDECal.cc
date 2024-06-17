@@ -746,7 +746,7 @@ bool DDECal::process(std::unique_ptr<DPBuffer> bufin) {
       itsInputBuffers.back().size() == itsRequestedSolInt) {
       
       // Check if the updated itsFirstSolutionIndex would exceed itsSols.size()
-      if (itsFirstSolutionIndex + itsInputBuffers.size() >= itsSols.size()) {
+      if (itsFirstSolutionIndex + itsInputBuffers.size() > itsSols.size()) {
         std::cerr << "Error: itsFirstSolutionIndex + itsInputBuffers.size() exceeds itsSols.size()" << std::endl;
         return false;  // Prevent the loop from continuing
     }
